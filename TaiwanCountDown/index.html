@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiwan Countdown & Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section with Countdown -->
+        <header class="header">
+            <h1 class="title">Countdown to Taiwan</h1>
+            <p class="target-date">July 25, 2026</p>
+        </header>
+
+        <!-- Main Calendar Section -->
+        <main class="main-content">
+            <div class="calendar-controls">
+                <button id="prevMonth" class="nav-btn" aria-label="Previous Month">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <h2 id="currentMonthLabel">Month Year</h2>
+                <button id="nextMonth" class="nav-btn" aria-label="Next Month">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+                <!-- Days will be injected here by JS -->
+            </div>
+            <div id="calendarDays" class="calendar-days"></div>
+        </main>
+
+        <!-- Footer / Info -->
+        <footer class="footer">
+            <div class="user-stats">
+                <span>Height: <strong>173 cm</strong></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Weight Entry Modal -->
+    <div id="entryModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <span class="close-modal">&times;</span>
+            <h3 id="modalDateTitle">Date</h3>
+            
+            <div class="input-group">
+                <label for="weightInput">Weight (kg)</label>
+                <input type="number" id="weightInput" step="0.1" placeholder="0.0">
+            </div>
+
+            <div class="bmi-result">
+                <span>BMI:</span>
+                <span id="bmiDisplay">--</span>
+                <span id="bmiCategory" class="badge">--</span>
+            </div>
+
+            <button id="saveBtn" class="primary-btn">Save Entry</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
