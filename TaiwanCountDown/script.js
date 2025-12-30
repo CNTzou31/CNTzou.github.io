@@ -1,7 +1,7 @@
 const TARGET_DATE = new Date('July 25, 2026 00:00:00').getTime();
 const USER_HEIGHT_CM = 173;
 // PASTE YOUR GOOGLE SCRIPT URL HERE
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmkytA9b2ydaY8JPCDBCchcoMQ40XE_FBIpT9t83KeHMsbTgTwqAXrwtSmnQgJvFPD/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2rn9s7PRwrnuLiMVWBGol12jnDiwQDHhifdR6r5EyHFAD9wnpQZfy0HX21m5czB15/exec';
 
 // State
 let currentDate = new Date(); // Updates with month navigation
@@ -238,4 +238,32 @@ modal.addEventListener('click', (e) => {
 });
 
 // Init
+// --- Cloud Sync ---
+function syncWithCloud() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'PLACEHOLDER') return;
+
+    console.log("Syncing with cloud...");
+
+    // Fetch with no-store to avoid browser caching of old data
+    fetch(GOOGLE_SCRIPT_URL, { cache: "no-store" })
+        .then(response => response.json())
+        .then(cloudData => {
+            console.log("Cloud data received:", cloudData);
+
+            // Merge cloud data into local storage
+            const localData = getStorageData();
+            // Cloud data takes precedence to ensure sync across devices
+            const mergedData = { ...localData, ...cloudData };
+
+            saveStorageData(mergedData);
+            renderCalendar(); // Re-render with new data
+            console.log("Sync complete.");
+        })
+        .catch(err => {
+            console.error("Error syncing with cloud:", err);
+        });
+}
+
+// Init
 renderCalendar();
+syncWithCloud();
