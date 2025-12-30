@@ -1,7 +1,7 @@
 const TARGET_DATE = new Date('July 25, 2026 00:00:00').getTime();
 const USER_HEIGHT_CM = 173;
 // PASTE YOUR GOOGLE SCRIPT URL HERE
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2rn9s7PRwrnuLiMVWBGol12jnDiwQDHhifdR6r5EyHFAD9wnpQZfy0HX21m5czB15/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfPk23oVfuQSwVKp_QtC2MuAbSKnvSl3xmLs6Ce5KcN7aTzL8kX7IC4r3fuJrsQ23K/exec';
 
 // State
 let currentDate = new Date(); // Updates with month navigation
