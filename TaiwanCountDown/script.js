@@ -238,4 +238,32 @@ modal.addEventListener('click', (e) => {
 });
 
 // Init
+// --- Cloud Sync ---
+function syncWithCloud() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'PLACEHOLDER') return;
+
+    console.log("Syncing with cloud...");
+
+    // Fetch with no-store to avoid browser caching of old data
+    fetch(GOOGLE_SCRIPT_URL, { cache: "no-store" })
+        .then(response => response.json())
+        .then(cloudData => {
+            console.log("Cloud data received:", cloudData);
+
+            // Merge cloud data into local storage
+            const localData = getStorageData();
+            // Cloud data takes precedence to ensure sync across devices
+            const mergedData = { ...localData, ...cloudData };
+
+            saveStorageData(mergedData);
+            renderCalendar(); // Re-render with new data
+            console.log("Sync complete.");
+        })
+        .catch(err => {
+            console.error("Error syncing with cloud:", err);
+        });
+}
+
+// Init
 renderCalendar();
+syncWithCloud();
