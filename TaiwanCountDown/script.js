@@ -1,6 +1,9 @@
-const TARGET_DATE = new Date('July 25, 2026 00:00:00').getTime();
+const VERSION = "1.0.3"; // Update this to force cache verification
+const TARGET_DATE_STR = '2026-07-25'; // July 25, 2026
+const TARGET_DATE = new Date(TARGET_DATE_STR + 'T12:00:00').getTime();
 const USER_HEIGHT_CM = 173;
-// PASTE YOUR GOOGLE SCRIPT URL HERE
+console.log(`🚀 Loading Taiwan Countdown v${VERSION}`);
+console.log(`🎯 Target Date: ${TARGET_DATE_STR}`);
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQjLTkFBNq9wkYnY7Q9guuKFvYKo28ALhROXsQNdDOaS7M4yFCZnUFV0N8kMSh81Hy/exec';
 
 // State
@@ -17,6 +20,14 @@ const bmiDisplay = document.getElementById('bmiDisplay');
 const bmiCategory = document.getElementById('bmiCategory');
 const modalDateTitle = document.getElementById('modalDateTitle');
 let selectedDateKey = null; // Format: YYYY-MM-DD
+
+// --- Helper Functions ---
+function getDaysLeft(dateStr) {
+    const d1 = new Date(dateStr + 'T12:00:00'); // Use Noon to avoid DST issues
+    const d2 = new Date(TARGET_DATE);
+    const diffTime = d2.getTime() - d1.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
 // --- Calendar Logic ---
 function getStorageData() {
     const data = localStorage.getItem('taiwanCountdownData');
@@ -61,13 +72,8 @@ function renderCalendar() {
         dateNum.innerText = i;
         dayDiv.appendChild(dateNum);
         // Days Remaining Calculation
-        const d1 = new Date(year, month, i);
-        d1.setHours(12, 0, 0, 0); // Noon to avoid DST issues
-        const d2 = new Date(TARGET_DATE);
-        d2.setHours(12, 0, 0, 0);
-        const diffTime = d2.getTime() - d1.getTime();
-        // Use logic that mimics 'ceil' but handles negative/positive correctly relative to dates
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = getDaysLeft(dateKey);
+
         if (diffDays >= 0) {
             const daysLeftDiv = document.createElement('div');
             daysLeftDiv.classList.add('days-left');
@@ -155,33 +161,45 @@ saveBtn.addEventListener('click', () => {
             weight: weight,
             bmi: bmi
         };
-    } else {
-        // If clear or 0, maybe remove? Or just ignore. Let's remove if empty.
-        delete data[selectedDateKey];
-    }
-    saveStorageData(data);
-    // --- Google Sheets Sync ---
-    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'PLACEHOLDER') {
-        saveBtn.innerText = "Saving...";
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
+        saveStorageData(data);
+        // --- Google Sheets Sync ---
+        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'PLACEHOLDER') {
+            saveBtn.innerText = "Saving...";
+
+            const daysLeft = getDaysLeft(selectedDateKey);
+
+            // Debug: Log what's being sent
+            const payload = {
                 date: selectedDateKey,
                 weight: weight,
-                bmi: calculateBMI(weight)
-            })
-        }).then(() => {
-            console.log("Success! (Note: 'no-cors' mode hides the response body, so we assume success if no network error)");
-            saveBtn.innerText = "Saved!";
-            setTimeout(() => saveBtn.innerText = "Save Entry", 1500);
-        }).catch(err => {
-            console.error('Error saving to sheet. Check network tab for details.', err);
-            saveBtn.innerText = "Error (Saved Locally)";
-        });
+                bmi: bmi,
+                daysLeft: daysLeft,
+                v: VERSION
+            };
+            console.log("📤 Sending to Google Sheets:", payload);
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log("✅ Data sent to Google Sheets successfully");
+                saveBtn.innerText = "Saved!";
+                setTimeout(() => saveBtn.innerText = "Save Entry", 1500);
+            }).catch(err => {
+                console.error('❌ Error saving to sheet:', err);
+                saveBtn.innerText = "Error (Saved Locally)";
+                setTimeout(() => saveBtn.innerText = "Save Entry", 2000);
+            });
+        }
+    } else {
+        // If clear or 0, remove from local storage only
+        delete data[selectedDateKey];
+        saveStorageData(data);
+        console.log("🗑️ Removed entry for date:", selectedDateKey);
     }
     modal.classList.add('hidden');
     renderCalendar();
@@ -205,7 +223,7 @@ function syncWithCloud() {
         .then(response => response.json())
         .then(cloudData => {
             console.log("☁️ Cloud data received:", Object.keys(cloudData).length, "entries");
-            
+
             // CRITICAL FIX: Normalize date keys to YYYY-MM-DD format
             // The Google Apps Script might return dates in various formats
             const normalizedCloudData = {};
